@@ -56,6 +56,7 @@ public class DGraph {
         Edge edge = new Edge(v, w, time, cost);
         addNeighbors(v, w);
         edges.add(edge);
+
     }
 
     /*
