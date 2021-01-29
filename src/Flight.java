@@ -57,11 +57,11 @@ public class Flight {
 
     // Constructor that initializes the citiesLeft with all cities 1 through
     // numCities inclusive
-    public Flight(DGraph dGraph, int numCities, int startCity, int arrivalCity, boolean nonstop, String airlineName) {
+    public Flight(DGraph dGraph, int numCities, int startCity, int arrivalCity, String airlineName) {
         this.startCity = startCity;
         this.arrivalCity = arrivalCity;
         this.dGraph = dGraph;
-        this.nonstop = nonstop;
+
         this.airlineName = airlineName;
         //FIXME figure out why -2
         this.numStops = -2;

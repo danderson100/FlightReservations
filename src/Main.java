@@ -69,6 +69,9 @@ public class Main {
     public static void main(String[] args) {
         //initialize the scanner and user collection we'll be using throughout the app
         Scanner scanner = new Scanner(System.in);
+        //add them all to the database
+        GenerateFlightsDB gen = new GenerateFlightsDB(args);
+        gen.generateFlights();
 
         DGraph unitedDgraph = null;
         DGraph deltaDgraph = null;
@@ -279,7 +282,7 @@ public class Main {
             isNonstop = true;
         }
         //we need to provide a list of all available flights
-        findAvailableFlights(departCity, arrivalCity, isNonstop, dGraphList);
+        //findAvailableFlights(departCity, arrivalCity, isNonstop, dGraphList);
 
 
     }
@@ -292,47 +295,47 @@ public class Main {
         System.out.println("\t 5. Los Angeles, CA");
     }
 
-    /**
-     * Purpose:
-     * @param departCity
-     * @param arrivalCity
-     * @param nonstop
-     * @param dGraphList
-     */
-    private static void findAvailableFlights(int departCity, int arrivalCity,
-                                             boolean nonstop, List<DGraph> dGraphList) {
-        //stores all the airline flights, so it should be size 3 at the end
-        List<List<Flight>> storeAllAirlineFlights = new ArrayList<>();
-        //this stores one airline's flights
-        List<Flight> flights = null;
-
-        for (DGraph dGraph : dGraphList) {
-            //iterates over the three airlines
-            Flight flight = new Flight(dGraph, 5, departCity, arrivalCity, nonstop, dGraph.getAirlineName());
-            flight.chooseNextCity(departCity);
-
-            if (nonstop) {
-                flights = getNonstopFlights(arrivalCity, flight);
-            } else {
-                //find all permutations where the last city = arrivalCity
-                flights = getAllFlights(departCity, arrivalCity, dGraph, flight);
-            }
-
-            storeAllAirlineFlights.add(flights);
-
-        }
-        printFlights(storeAllAirlineFlights);
-        //checkOrganizationMethod(flights, storeAllAirlineFlights, nonstop);
-
-    }
+//    /**
+//     * Purpose:
+//     * @param departCity
+//     * @param arrivalCity
+//     * @param nonstop
+//     * @param dGraphList
+//     */
+//    private static void findAvailableFlights(int departCity, int arrivalCity,
+//                                             boolean nonstop, List<DGraph> dGraphList) {
+//        //stores all the airline flights, so it should be size 3 at the end
+//        Map<String, List<Flight>> airlineFlights = new HashMap<>();
+//        //this stores one airline's flights
+//        List<Flight> flights = null;
+//
+//        for (DGraph dGraph : dGraphList) {
+//            //iterates over the three airlines
+//            Flight flight = new Flight(dGraph, 5, departCity, arrivalCity, nonstop, dGraph.getAirlineName());
+//            flight.chooseNextCity(departCity);
+//
+//            if (nonstop) {
+//                flights = getNonstopFlights(arrivalCity, flight);
+//            } else {
+//                //find all permutations where the last city = arrivalCity
+//                flights = getAllFlights(departCity, arrivalCity, dGraph, flight);
+//            }
+//            String airline = dGraph.getAirlineName();
+//            airlineFlights.put(airline, flights);
+//
+//        }
+//        printFlights(airlineFlights);
+//        checkOrganizationMethod(flights, airlineFlights, nonstop);
+//
+//    }
 
     /**
      * Purpose:
      * @param flights
-     * @param storeAllAirlineFlights
+     * @param airlineFlights
      * @param nonstop
      */
-    private static void checkOrganizationMethod(List<Flight> flights, List<List<Flight>> storeAllAirlineFlights,
+    private static void checkOrganizationMethod(List<Flight> flights, Map<String, List<Flight>> airlineFlights,
                                                 boolean nonstop) {
         System.out.println("How would you like to order the available DEPARTURE flights?");
         System.out.println("\t1. Cost (Cheapest to Most Expensive)");
@@ -346,17 +349,17 @@ public class Main {
             System.out.println("Error: " + e);
         }
 
-        organizeFlights(flights, storeAllAirlineFlights, nonstop, choice);
+        organizeFlights(flights, airlineFlights, nonstop, choice);
     }
 
     /**
      * Purpose:
      * @param flights
-     * @param storeAllAirlineFlights
+     * @param airlineFlights
      * @param nonstop
      * @param choice
      */
-    private static void organizeFlights(List<Flight> flights, List<List<Flight>> storeAllAirlineFlights,
+    private static void organizeFlights(List<Flight> flights, Map<String, List<Flight>> airlineFlights,
                                         boolean nonstop, int choice) {
 
         Map<Double, Flight> storage = new TreeMap<>();
@@ -370,13 +373,13 @@ public class Main {
 
     /**
      * Purpose: A short helper method that prints the available flights from each airline.
-     * @param storeAllAirlineFlights, is the List of ArrayLists of flights from each airline.
+     * @param airlineFlights, is the Map of ArrayLists of flights from each airline.
      */
-    private static void printFlights(List<List<Flight>> storeAllAirlineFlights) {
-
-        for (List<Flight> airlineFlights : storeAllAirlineFlights) {
-            for (Flight currFlight : airlineFlights) {
-                System.out.println("From printAllFlights method: " + currFlight.toString());
+    private static void printFlights(Map<String, List<Flight>> airlineFlights) {
+        for (String airline : airlineFlights.keySet()) {
+            List<Flight> currAirlineFlights = airlineFlights.get(airline);
+            for (Flight flight : currAirlineFlights) {
+                System.out.println(flight.toString());
             }
         }
     }
