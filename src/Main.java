@@ -63,35 +63,16 @@ public class Main {
     //temporary global variable to quit the program
     private static boolean quitApp = false;
 
-    private static final String DB_NAME = "flightres.db";
-    private static final String CONNECTION_STRING = "jdbc:sqlite:" + DB_NAME;
-
     public static void main(String[] args) {
         //initialize the scanner and user collection we'll be using throughout the app
         Scanner scanner = new Scanner(System.in);
         //add them all to the database
-        GenerateFlightsDB gen = new GenerateFlightsDB(args);
-        gen.generateFlights();
+        //TODO: Use this to add flights to the database
+//        GenerateFlightsDB gen = new GenerateFlightsDB(args);
+//        gen.generateFlights();
 
-        DGraph unitedDgraph = null;
-        DGraph deltaDgraph = null;
-        DGraph americanDgraph = null;
-
-        try {
-            unitedDgraph = read(args[0]);
-            deltaDgraph = read(args[1]);
-            americanDgraph = read(args[2]);
-        } catch (IOException e) {
-            System.out.println("Error: " + e);
-            System.exit(1);
-        }
-
-        List<DGraph> dGraphList = new ArrayList<>();
-        dGraphList.add(unitedDgraph);
-        dGraphList.add(deltaDgraph);
-        dGraphList.add(americanDgraph);
         //begin user section of program
-        welcomeMsg(scanner, dGraphList, null);
+        welcomeMsg(scanner, null);
 
         scanner.close();
     }
@@ -101,9 +82,8 @@ public class Main {
      * account or creates a new account. Right now it uses simple storage but when finished
      * it will use database and password hashing to store user info.
      * @param scanner, the IO scanner object.
-     * @param dGraphList, the list of all directed graphs which will become flights
      */
-    private static void welcomeMsg(Scanner scanner, List<DGraph> dGraphList, User currUser) {
+    private static void welcomeMsg(Scanner scanner, User currUser) {
         System.out.println("Welcome! Please select an option: ");
         System.out.println("\t1. Login\n \t2. Create Account");
 
@@ -118,7 +98,7 @@ public class Main {
                 }
                 default -> {
                     System.out.println("Error! Please try again");
-                    welcomeMsg(scanner, dGraphList, currUser);
+                    welcomeMsg(scanner, currUser);
                 }
             }
         } catch (InputMismatchException e) {
@@ -126,7 +106,7 @@ public class Main {
             System.exit(-1);
         }
         if (currUser != null) {
-            successFulLoginInterface(scanner, currUser, dGraphList);
+            successFulLoginInterface(scanner, currUser);
         }
         scanner.close();
 
@@ -136,10 +116,8 @@ public class Main {
      * Purpose: ADDME
      * @param scanner
      * @param currUser
-     * @param dGraphList
      */
-    private static void successFulLoginInterface(Scanner scanner, User currUser,
-                                                 List<DGraph> dGraphList) {
+    private static void successFulLoginInterface(Scanner scanner, User currUser) {
         do {
             System.out.println("Welcome to Reservations!\nWhat would you like to book " +
                     "(type the number for your choice)?");
@@ -149,15 +127,15 @@ public class Main {
                 selection = scanner.nextInt();
             } catch (InputMismatchException e) {
                 System.out.println("Error. Please try again.");
-                welcomeMsg(scanner, dGraphList, currUser);
+                welcomeMsg(scanner, currUser);
             }
 
             switch (selection) {
                 case 1 -> bookHotel(scanner);
-                case 2 -> bookAirline(scanner, dGraphList);
+                case 2 -> bookAirline(scanner);
                 case 3 -> {
                     bookHotel(scanner);
-                    bookAirline(scanner, dGraphList);
+                    bookAirline(scanner);
                 }
                 case 4 ->  {
                     System.out.println("Goodbye!");
@@ -165,7 +143,7 @@ public class Main {
                 }
                 default -> {
                     System.out.println("Error. Try again.");
-                    welcomeMsg(scanner, dGraphList, currUser);
+                    welcomeMsg(scanner, currUser);
                 }
             }
         } while (!quitApp);
@@ -251,9 +229,8 @@ public class Main {
     /**
      * Purpose: add here
      * @param scanner
-     * @param dGraphList
      */
-    private static void bookAirline(Scanner scanner, List<DGraph> dGraphList) {
+    private static void bookAirline(Scanner scanner) {
         int departCity = -1;
         int arrivalCity = -1;
 
@@ -281,6 +258,8 @@ public class Main {
         if (nonstop.equals("YES")) {
             isNonstop = true;
         }
+        //FIXME: Now that we have a DB of flights, we can pull flights with correct info
+
         //we need to provide a list of all available flights
         //findAvailableFlights(departCity, arrivalCity, isNonstop, dGraphList);
 
@@ -294,40 +273,6 @@ public class Main {
         System.out.println("\t 4. Las Vega, NV");
         System.out.println("\t 5. Los Angeles, CA");
     }
-
-//    /**
-//     * Purpose:
-//     * @param departCity
-//     * @param arrivalCity
-//     * @param nonstop
-//     * @param dGraphList
-//     */
-//    private static void findAvailableFlights(int departCity, int arrivalCity,
-//                                             boolean nonstop, List<DGraph> dGraphList) {
-//        //stores all the airline flights, so it should be size 3 at the end
-//        Map<String, List<Flight>> airlineFlights = new HashMap<>();
-//        //this stores one airline's flights
-//        List<Flight> flights = null;
-//
-//        for (DGraph dGraph : dGraphList) {
-//            //iterates over the three airlines
-//            Flight flight = new Flight(dGraph, 5, departCity, arrivalCity, nonstop, dGraph.getAirlineName());
-//            flight.chooseNextCity(departCity);
-//
-//            if (nonstop) {
-//                flights = getNonstopFlights(arrivalCity, flight);
-//            } else {
-//                //find all permutations where the last city = arrivalCity
-//                flights = getAllFlights(departCity, arrivalCity, dGraph, flight);
-//            }
-//            String airline = dGraph.getAirlineName();
-//            airlineFlights.put(airline, flights);
-//
-//        }
-//        printFlights(airlineFlights);
-//        checkOrganizationMethod(flights, airlineFlights, nonstop);
-//
-//    }
 
     /**
      * Purpose:
@@ -372,120 +317,6 @@ public class Main {
     }
 
     /**
-     * Purpose: A short helper method that prints the available flights from each airline.
-     * @param airlineFlights, is the Map of ArrayLists of flights from each airline.
-     */
-    private static void printFlights(Map<String, List<Flight>> airlineFlights) {
-        for (String airline : airlineFlights.keySet()) {
-            List<Flight> currAirlineFlights = airlineFlights.get(airline);
-            for (Flight flight : currAirlineFlights) {
-                System.out.println(flight.toString());
-            }
-        }
-    }
-
-    /**
-     * Purpose:
-     * @param arrivalCity
-     * @param currFlight
-     * @return
-     */
-    private static List<Flight> getNonstopFlights(int arrivalCity, Flight currFlight) {
-        List<Flight> flights = new ArrayList<>();
-        currFlight.chooseNextCity(arrivalCity);
-        Flight flight = new Flight();
-        flight.copyOtherIntoSelf(currFlight);
-        flight.setDepartTime();
-        flights.add(flight);
-
-        storeFlights(flights);
-        return flights;
-    }
-
-    private static void storeFlights(List<Flight> flights) {
-        for (Flight flight : flights) {
-            String airline = "";
-            try {
-                String airlineName = flight.getAirlineName();
-                switch (airlineName) {
-                    case "United" -> airline = "UnitedFlights";
-                    case "American" -> airline = "AmericanFlights";
-                    case "Delta" -> airline = "DeltaFlights";
-                }
-                Connection conn = DriverManager.getConnection(CONNECTION_STRING);
-                Statement statement = conn.createStatement();
-                String query = "INSERT INTO " + airline + " (flight) " + "VALUES('" +
-                        flight + "')";
-                statement.executeQuery(query);
-            } catch (SQLException e) {
-                System.out.println("Error: " + e);
-            }
-        }
-
-    }
-
-    /**
-     * Purpose:
-     * @param departCity
-     * @param arrivalCity
-     * @param dGraph
-     * @param currFlight
-     * @return
-     */
-    private static List<Flight> getAllFlights(int departCity, int arrivalCity, DGraph dGraph, Flight currFlight) {
-        //this will store the order in which the flight reaches each city.
-        List<Integer> visitOrder = new ArrayList<>();
-        //we add departcity here because it will always depart from the same city
-        visitOrder.add(departCity);
-
-        List<Flight> flights = new ArrayList<>();
-
-        return getAllFlightsHelper(dGraph, currFlight, visitOrder, arrivalCity, 0, flights);
-    }
-
-    /**
-     * Purpose:
-     * @param dGraph
-     * @param currFlight
-     * @param visitOrder
-     * @param arrivalCity
-     * @param count
-     * @param flights
-     * @return
-     */
-    private static List<Flight> getAllFlightsHelper(DGraph dGraph, Flight currFlight, List<Integer> visitOrder,
-                                                    int arrivalCity, int count, List<Flight> flights) {
-
-        List<Integer> neighbors = dGraph.getNeighbors(visitOrder.get(count));
-        //base case - if there are no permutations that end at the arrival city left
-        if (currFlight.currentCity() == arrivalCity) {
-            //IMPORTANT!!!! We need to make a copy of the flight and add THAT to flights
-            //Otherwise the pointer continues to point at the currFlight object and updates it with the others.
-            Flight flight = new Flight();
-            flight.copyOtherIntoSelf(currFlight);
-            //FIXME: This isn't storing the correct departure/arrival times
-            flight.setDepartTime();
-            flights.add(flight);
-
-        } else {
-            //recursive case
-            for (Integer neighbor : neighbors) {
-                if (currFlight.isCityAvailable(neighbor)) {
-                    //choose
-                    currFlight.chooseNextCity(neighbor);
-                    visitOrder.add(neighbor);
-                    //explore
-                    getAllFlightsHelper(dGraph, currFlight, visitOrder, arrivalCity, count + 1, flights);
-                    //un-choose
-                    currFlight.unchooseLastCity();
-                    visitOrder.remove(neighbor);
-                }
-            }
-        }
-        return flights;
-    }
-
-    /**
      * Purpose:
      * @param scanner
      */
@@ -493,45 +324,4 @@ public class Main {
         System.out.println("Booking hotel....");
     }
 
-    /**
-     * Purpose: This method takes in an .mtx Sparse matrix file and reads the data
-     * to create a DGraph object containing all of the nodes, edges, and weights.
-     * The edges hold two weights: cost and time.
-     *
-     * @param filename, is the name of the .mtx file in the working directory
-     * @return dGraph, is the Directed Graph with all the graph information
-     * @throws IOException, will be thrown if the file cannot be found
-     */
-    public static DGraph read(String filename) throws IOException {
-
-        Scanner scanner = new Scanner(new File(filename));
-        String line = "";
-        //TODO: CLEAN THIS UP
-        String airlineNameStr = scanner.nextLine();
-        String[] airlineSplit = airlineNameStr.split("\\s");
-        String airlineName = airlineSplit[0];
-        // read comment lines if any
-        boolean comment = true;
-        while (comment) {
-            line = scanner.nextLine();
-            comment = line.startsWith("%");
-        }
-        String[] numCitiesStr = line.split("\\s+");
-        int numCities = Integer.parseInt(numCitiesStr[0]);
-        DGraph dGraph = new DGraph(numCities, airlineName);
-        //data section
-        while (scanner.hasNext()) {
-            line = scanner.nextLine();
-            if (line == null) break;
-            String[] str = line.split("\\s+");
-            int i = Integer.parseInt(str[0].trim());
-            int j = Integer.parseInt(str[1].trim());
-
-            double time = Double.parseDouble(str[2].trim());
-            double cost = Double.parseDouble((str[3].trim()));
-            dGraph.addEdge(i, j, time, cost);
-        }
-        scanner.close();
-        return dGraph;
-    }
 }

@@ -222,6 +222,10 @@ public class Flight {
         return cost;
     }
 
+    public String getVisitOrder() {
+        return visitOrder.toString();
+    }
+
     public int getNumStops() {
         return numStops;
     }
@@ -251,7 +255,7 @@ public class Flight {
         NumberFormat dollarFormatter = NumberFormat.getCurrencyInstance(Locale.US);
         String formattedCost = dollarFormatter.format(cost);
         //TODO: remove this after testing
-        System.out.println("--------------");
+        //System.out.println("--------------");
         String str = "";
         str += "visitOrder = " + visitOrder;
         str += ", citiesLeft = " + citiesLeft;

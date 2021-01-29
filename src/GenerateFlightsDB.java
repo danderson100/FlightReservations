@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.text.NumberFormat;
 import java.util.*;
 
 public class GenerateFlightsDB {
@@ -20,14 +21,14 @@ public class GenerateFlightsDB {
     public void generateFlights() {
         List<DGraph> dGraphList = generateDGraphs();
 
-        findAvailableFlights(1, 5, dGraphList);
+       // findAvailableFlights(1, 5, dGraphList);
 
-//        for (int startCity = 1; startCity < 5; startCity++) {
-//            for (int arrivalCity = startCity+1; arrivalCity < 6; arrivalCity++) {
-//                //generates all flights from 1 to 5, 2 to 5, 3 to 5, etc...
-//                findAvailableFlights(startCity, arrivalCity, dGraphList);
-//            }
-//        }
+        for (int startCity = 5; startCity > 1; startCity--) {
+            for (int arrivalCity = startCity-1; arrivalCity >0; arrivalCity--) {
+                //generates all flights from 1 to 5, 2 to 5, 3 to 5, etc...
+                findAvailableFlights(startCity, arrivalCity, dGraphList);
+            }
+        }
     }
 
     private List<DGraph> generateDGraphs() {
@@ -78,7 +79,7 @@ public class GenerateFlightsDB {
 
            // String airline = dGraph.getAirlineName();
           //  airlineFlights.put(airline, flights);
-            storeFlights(flights);
+            storeFlights(flights, dGraph);
         }
 
 
@@ -148,11 +149,18 @@ public class GenerateFlightsDB {
         return flights;
     }
 
-    private static void storeFlights(List<Flight> flights) {
+    private static void storeFlights(List<Flight> flights, DGraph dGraph) {
         String ID = "";
-        int idNum = 100;
+        Random rnd = new Random();
+        String characters = "BCEFGHIJKLMNOPQRSTVWXYZ";
+
         for (Flight flight : flights) {
             String airline = "";
+
+            char randomChar = characters.charAt(rnd.nextInt(characters.length()));
+            char otherRandomChar = characters.charAt(rnd.nextInt(characters.length()));
+            int idNum = rnd.nextInt(5000);
+
             try {
                 String airlineName = flight.getAirlineName();
                 switch (airlineName) {
@@ -160,20 +168,25 @@ public class GenerateFlightsDB {
                     case "American" -> airline = "AmericanFlights";
                     case "Delta" -> airline = "DeltaFlights";
                 }
-                ID = airline.charAt(0) + String.valueOf(idNum);
+                ID = airline.substring(0, 2).toUpperCase() + idNum + randomChar + otherRandomChar;
+
+                double time = flight.flightCost(dGraph, "time");
+                double cost = flight.flightCost(dGraph, "cost");
+
+                NumberFormat formatter = NumberFormat.getCurrencyInstance(Locale.US);
+                String formattedCost = formatter.format(cost);
+
                 Connection conn = DriverManager.getConnection(CONNECTION_STRING);
                 Statement statement = conn.createStatement();
-                String query = "INSERT INTO flights (airline, duration, cost, numStops, obj, ID) " +
-                        "VALUES('" + airline + "', '" + flight.getTime() + "', '" + flight.getCost() +
-                        "', '" + flight.getNumStops() +"', '" + flight + "', '" + ID + "')";
+                String query = "INSERT INTO flights (airline, duration, cost, numStops, obj, ID, visitOrder) " +
+                        "VALUES('" + airline + "', '" + time + "', '" + formattedCost +
+                        "', '" + flight.getNumStops() +"', '" + flight + "', '" + ID + "', '" + flight.getVisitOrder() + "')";
 
-//                String query = "INSERT INTO users (username, pass, email, phone) " +
-//                        "VALUES('" + name + "', '" + hashedPW + "', '" + email + "', '" + phone +"')";
+
                 statement.executeUpdate(query);
             } catch (SQLException e) {
                 System.out.println("Error: " + e);
             }
-            idNum++;
         }
 
     }
