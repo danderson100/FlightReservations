@@ -271,7 +271,7 @@ public class Flight {
         double cost = flightCost(dGraph, "cost");
         NumberFormat dollarFormatter = NumberFormat.getCurrencyInstance(Locale.US);
         String formattedCost = dollarFormatter.format(cost);
-
+        //TODO: add str for more detailed flight info
         String str = "";
         str += "visitOrder = " + visitOrder;
         str += ", citiesLeft = " + citiesLeft;
@@ -281,7 +281,7 @@ public class Flight {
         }
         return dGraph.getAirlineName() + ": This flight from " + getCityName(departCity) +
                 " to " + getCityName(arrivalCity) + " departs at: " + departTime + " and takes " + String.format("%.1f", time) +
-                " hour(s). It costs " + formattedCost + ". " + stops + "\n" + str;
+                " hour(s). It costs " + formattedCost + ". " + stops + ".";
     }
 
 }
