@@ -1,8 +1,4 @@
-import java.text.DateFormat;
 import java.text.NumberFormat;
-import java.text.SimpleDateFormat;
-import java.time.format.DateTimeFormatter;
-import java.time.format.FormatStyle;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -52,7 +48,25 @@ public class Flight {
     private String departTime;
     private String arrivalTime;
 
-    private double time;
+    private String ID;
+
+    public String getID() {
+        return ID;
+    }
+
+    public void setID(String ID) {
+        this.ID = ID;
+    }
+
+    public void setDuration(double duration) {
+        this.duration = duration;
+    }
+
+    public void setCost(double cost) {
+        this.cost = cost;
+    }
+
+    private double duration;
     private double cost;
 
     private int numStops;
@@ -83,17 +97,24 @@ public class Flight {
         for (int i = 0; i < 120; i++) {
             seatAvailable[i] = true;
         }
-        //SEE IF THIS FIXES IT
-        //TODO: REMOVE OR BUG FIX
-//        setDepartTime();
-//        this.departTime = getDepartTime();
-//        this.arrivalTime = getArrivalTime();
 
     }
 
     //empty constructor which allows us to use copyOtherIntoSelf to make a copy
     public Flight() {
 
+    }
+
+    public void setDepartCity(int departCity) {
+        this.departCity = departCity;
+    }
+
+    public void setArrivalCity(int arrivalCity) {
+        this.arrivalCity = arrivalCity;
+    }
+
+    public void setNonStop(boolean nonstop) {
+        this.nonstop = nonstop;
     }
 
     public void setDepartTime() {
@@ -106,6 +127,11 @@ public class Flight {
         setArrivalTime();
     }
 
+    //OVERLOADED method
+    public void setDepartTime(String departTime) {
+        this.departTime = departTime;
+    }
+
     public String getDepartTime() {
         return departTime;
     }
@@ -115,7 +141,7 @@ public class Flight {
         String hour = splitStr[0];
         String min = splitStr[1];
         double departTimeAsDouble = Double.parseDouble(hour + "." + min);
-        double arriveTime = time + departTimeAsDouble;
+        double arriveTime = duration + departTimeAsDouble;
         String arrivalStr = String.format("%.2f", arriveTime);
         arrivalTime = arrivalStr.replace(".", ":");
     }
@@ -145,7 +171,7 @@ public class Flight {
         departCity = flightSoFar.departCity;
         arrivalCity = flightSoFar.arrivalCity;
         dGraph = flightSoFar.dGraph;
-        time = flightSoFar.time;
+        duration = flightSoFar.duration;
         cost = flightSoFar.cost;
         airlineName = flightSoFar.airlineName;
         numStops = flightSoFar.numStops;
@@ -200,8 +226,8 @@ public class Flight {
         numStops--;
     }
 
-    public double getTime() {
-        return time;
+    public double getDuration() {
+        return duration;
     }
 
     public double getCost() {
@@ -232,7 +258,7 @@ public class Flight {
         }
 
         if (choice.equals("time")) {
-            this.time = cost;
+            this.duration = cost;
         } else {
             this.cost = cost;
         }

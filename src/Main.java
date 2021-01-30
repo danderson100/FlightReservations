@@ -1,9 +1,6 @@
 import java.io.File;
 import java.io.IOException;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.*;
 import java.util.*;
 
 /*
@@ -63,13 +60,16 @@ public class Main {
     //temporary global variable to quit the program
     private static boolean quitApp = false;
 
+    private static final String DB_NAME = "flightres.db";
+    private static final String CONNECTION_STRING = "jdbc:sqlite:" + DB_NAME;
+
     public static void main(String[] args) {
         //initialize the scanner and user collection we'll be using throughout the app
         Scanner scanner = new Scanner(System.in);
         //add them all to the database
-        //TODO: Use this to add flights to the database
-        GenerateFlightsDB gen = new GenerateFlightsDB(args);
-        gen.generateFlights();
+        //TODO: Un-comment this to add flights to the database
+//        GenerateFlightsDB gen = new GenerateFlightsDB(args);
+//        gen.generateFlights();
 
         //begin user section of program
         welcomeMsg(scanner, null);
@@ -174,8 +174,6 @@ public class Main {
             createAccount(scanner);
         }
 
-
-
     }
 
     /**
@@ -199,31 +197,35 @@ public class Main {
             boolean check = attempt.validateLogin(username, pass);
 
             if (!check) {
-                System.out.println("Login failed. What would you like to do?");
-                System.out.println("\t1. Try again");
-                System.out.println("\t2. Create Account");
-                System.out.println("\t3. Exit");
-                int choice = scanner.nextInt();
-                switch (choice) {
-                    case 1 -> login(scanner);
-                    case 2 -> createAccount(scanner);
-                    case 3 -> {
-                        System.out.println("Goodbye!");
-                        System.exit(1);
-                    }
-                }
-
+                loginFailed(scanner);
             } else {
                 List<String> otherCreds = attempt.getCredentials(username);
                 attempt.setEmail(otherCreds.get(0));
                 attempt.setPhone(otherCreds.get(1));
-                System.out.println("Login in as " + username);
+                System.out.println("Logged in as " + username);
                 login = true;
             }
 
         } while (!login);
 
         return attempt;
+    }
+
+    private static void loginFailed(Scanner scanner) {
+
+        System.out.println("Login failed. What would you like to do?");
+        System.out.println("\t1. Try again");
+        System.out.println("\t2. Create Account");
+        System.out.println("\t3. Exit");
+        int choice = scanner.nextInt();
+        switch (choice) {
+            case 1 -> login(scanner);
+            case 2 -> createAccount(scanner);
+            case 3 -> {
+                System.out.println("Goodbye!");
+                System.exit(1);
+            }
+        }
     }
 
     /**
@@ -259,11 +261,51 @@ public class Main {
             isNonstop = true;
         }
         //FIXME: Now that we have a DB of flights, we can pull flights with correct info
-
+        getFlights(departCity, arrivalCity, isNonstop);
         //we need to provide a list of all available flights
         //findAvailableFlights(departCity, arrivalCity, isNonstop, dGraphList);
 
+    }
 
+    private static List<Flight> getFlights(int departCity, int arrivalCity, boolean nonstop) {
+
+        List<Flight> relevantFlights = new ArrayList<>();
+        Flight flight = new Flight();
+        flight.setDepartCity(departCity);
+        flight.setArrivalCity(arrivalCity);
+        flight.setNonStop(nonstop);
+
+        String checkPassQuery;
+        try {
+            Connection conn = DriverManager.getConnection(CONNECTION_STRING);
+            Statement statement = conn.createStatement();
+            if (!nonstop) {
+                checkPassQuery = "SELECT * FROM flights WHERE dCity='" + departCity + "' AND aCity='" + arrivalCity +"'";
+            } else {
+                checkPassQuery = "SELECT * FROM flights WHERE dCity='" + departCity + "' AND aCity='" + arrivalCity +
+                        "' AND numStops='0'";
+            }
+
+            ResultSet results = statement.executeQuery(checkPassQuery);
+            while (results.next()) {
+                double duration = results.getDouble("duration");
+                String cost = results.getString("cost");
+                String ID = results.getString("ID");
+                String airline = results.getString("airline");
+                //FIXME find out how to remove as List
+                //String visitOrder = results.getString("visitOrder");
+                String departTime = results.getString("dTime");
+
+                flight.setDepartTime(departTime);
+                flight.setID(ID);
+
+
+            }
+        } catch (SQLException e) {
+            System.out.println("Error: " + e);
+        }
+
+        return relevantFlights;
     }
     //short helper method to print the city names
     private static void printCities() {
