@@ -15,7 +15,7 @@ import java.util.*;
  * a mix of both for the optimal choice.
  *
  * USAGE:
- * java Main infile1.mtx infile2.mtx infile3.mtx
+ * java Main
  *
  * where infile is the name of an input file in the following format:
  *
@@ -68,8 +68,8 @@ public class Main {
         Scanner scanner = new Scanner(System.in);
         //add them all to the database
         //TODO: Use this to add flights to the database
-//        GenerateFlightsDB gen = new GenerateFlightsDB(args);
-//        gen.generateFlights();
+        GenerateFlightsDB gen = new GenerateFlightsDB(args);
+        gen.generateFlights();
 
         //begin user section of program
         welcomeMsg(scanner, null);

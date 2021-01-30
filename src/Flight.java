@@ -1,4 +1,8 @@
+import java.text.DateFormat;
 import java.text.NumberFormat;
+import java.text.SimpleDateFormat;
+import java.time.format.DateTimeFormatter;
+import java.time.format.FormatStyle;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -39,7 +43,7 @@ public class Flight {
     private List<Integer> visitOrder;
     private TreeSet<Integer> citiesLeft;
 
-    private int startCity;
+    private int departCity;
     private int arrivalCity;
 
     private boolean nonstop;
@@ -57,8 +61,8 @@ public class Flight {
 
     // Constructor that initializes the citiesLeft with all cities 1 through
     // numCities inclusive
-    public Flight(DGraph dGraph, int numCities, int startCity, int arrivalCity, String airlineName) {
-        this.startCity = startCity;
+    public Flight(DGraph dGraph, int numCities, int departCity, int arrivalCity, String airlineName) {
+        this.departCity = departCity;
         this.arrivalCity = arrivalCity;
         this.dGraph = dGraph;
 
@@ -66,11 +70,11 @@ public class Flight {
         //FIXME figure out why -2
         this.numStops = -2;
         //120 is the total number of seats
-        seatAvailable = new boolean[120];
+        this.seatAvailable = new boolean[120];
         //keeps track of the cities we have visited so far
-        visitOrder = new ArrayList<>();
+        this.visitOrder = new ArrayList<>();
         //orders the list of cities left for easier traversal
-        citiesLeft = new TreeSet<>();
+        this.citiesLeft = new TreeSet<>();
         //since all cities (1 - numCities) are available at time of construction
         for (int i = 1; i <= numCities; i++) {
             citiesLeft.add(i);
@@ -79,6 +83,11 @@ public class Flight {
         for (int i = 0; i < 120; i++) {
             seatAvailable[i] = true;
         }
+        //SEE IF THIS FIXES IT
+        //TODO: REMOVE OR BUG FIX
+//        setDepartTime();
+//        this.departTime = getDepartTime();
+//        this.arrivalTime = getArrivalTime();
 
     }
 
@@ -90,7 +99,9 @@ public class Flight {
     public void setDepartTime() {
         final Random random = new Random();
         final int millisInDay = 24*60*60*1000;
+        //DateTimeFormatter timeFormatter = DateTimeFormatter.ofLocalizedTime(FormatStyle.SHORT);
         Time time = new Time(random.nextInt(millisInDay));
+        //departTime = timeFormatter.format();
         departTime = String.valueOf(time).substring(0, 5);
         setArrivalTime();
     }
@@ -113,7 +124,13 @@ public class Flight {
         return arrivalTime;
     }
 
+    public int getDepartCity() {
+        return departCity;
+    }
 
+    public int getArrivalCity() {
+        return arrivalCity;
+    }
 
     //returns a String containing the airline company that offers this flight
     public String getAirlineName() {
@@ -125,7 +142,7 @@ public class Flight {
         // Making a copy of the set and list in this data structure.
         citiesLeft = new TreeSet<>(flightSoFar.citiesLeft);
         visitOrder = new ArrayList<>(flightSoFar.visitOrder);
-        startCity = flightSoFar.startCity;
+        departCity = flightSoFar.departCity;
         arrivalCity = flightSoFar.arrivalCity;
         dGraph = flightSoFar.dGraph;
         time = flightSoFar.time;
@@ -254,8 +271,7 @@ public class Flight {
         double cost = flightCost(dGraph, "cost");
         NumberFormat dollarFormatter = NumberFormat.getCurrencyInstance(Locale.US);
         String formattedCost = dollarFormatter.format(cost);
-        //TODO: remove this after testing
-        //System.out.println("--------------");
+
         String str = "";
         str += "visitOrder = " + visitOrder;
         str += ", citiesLeft = " + citiesLeft;
@@ -263,7 +279,7 @@ public class Flight {
         if (numStops == 0) {
             stops = "Nonstop.";
         }
-        return dGraph.getAirlineName() + ": DEPARTURE FLIGHT:  This flight from " + getCityName(startCity) +
+        return dGraph.getAirlineName() + ": This flight from " + getCityName(departCity) +
                 " to " + getCityName(arrivalCity) + " departs at: " + departTime + " and takes " + String.format("%.1f", time) +
                 " hour(s). It costs " + formattedCost + ". " + stops + "\n" + str;
     }

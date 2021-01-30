@@ -21,11 +21,18 @@ public class GenerateFlightsDB {
     public void generateFlights() {
         List<DGraph> dGraphList = generateDGraphs();
 
-       // findAvailableFlights(1, 5, dGraphList);
+        //findAvailableFlights(1, 5, dGraphList);
+
+        for (int startCity = 1; startCity < 5; startCity++) {
+            for (int arrivalCity = startCity+1; arrivalCity < 6; arrivalCity++) {
+                //generates all flights from 1 to 5, 2 to 5, 3 to 5, etc...
+                findAvailableFlights(startCity, arrivalCity, dGraphList);
+            }
+        }
 
         for (int startCity = 5; startCity > 1; startCity--) {
             for (int arrivalCity = startCity-1; arrivalCity >0; arrivalCity--) {
-                //generates all flights from 1 to 5, 2 to 5, 3 to 5, etc...
+                //generates all flights from 5 to 4, 5 to 3, etc....
                 findAvailableFlights(startCity, arrivalCity, dGraphList);
             }
         }
@@ -126,6 +133,7 @@ public class GenerateFlightsDB {
             //IMPORTANT!!!! We need to make a copy of the flight and add THAT to flights
             //Otherwise the pointer continues to point at the currFlight object and updates it with the others.
             Flight flight = new Flight();
+
             flight.copyOtherIntoSelf(currFlight);
             //FIXME: This isn't storing the correct departure/arrival times
             flight.setDepartTime();
@@ -149,26 +157,14 @@ public class GenerateFlightsDB {
         return flights;
     }
 
-    private static void storeFlights(List<Flight> flights, DGraph dGraph) {
-        String ID = "";
-        Random rnd = new Random();
-        String characters = "BCEFGHIJKLMNOPQRSTVWXYZ";
+    private void storeFlights(List<Flight> flights, DGraph dGraph) {
 
         for (Flight flight : flights) {
-            String airline = "";
-
-            char randomChar = characters.charAt(rnd.nextInt(characters.length()));
-            char otherRandomChar = characters.charAt(rnd.nextInt(characters.length()));
-            int idNum = rnd.nextInt(5000);
 
             try {
                 String airlineName = flight.getAirlineName();
-                switch (airlineName) {
-                    case "United" -> airline = "UnitedFlights";
-                    case "American" -> airline = "AmericanFlights";
-                    case "Delta" -> airline = "DeltaFlights";
-                }
-                ID = airline.substring(0, 2).toUpperCase() + idNum + randomChar + otherRandomChar;
+
+                String ID = genID(airlineName);
 
                 double time = flight.flightCost(dGraph, "time");
                 double cost = flight.flightCost(dGraph, "cost");
@@ -178,9 +174,10 @@ public class GenerateFlightsDB {
 
                 Connection conn = DriverManager.getConnection(CONNECTION_STRING);
                 Statement statement = conn.createStatement();
-                String query = "INSERT INTO flights (airline, duration, cost, numStops, obj, ID, visitOrder) " +
-                        "VALUES('" + airline + "', '" + time + "', '" + formattedCost +
-                        "', '" + flight.getNumStops() +"', '" + flight + "', '" + ID + "', '" + flight.getVisitOrder() + "')";
+                String query = "INSERT INTO flights (airline, dCity, aCity, duration, cost, numStops, obj, ID, visitOrder, dTime) " +
+                        "VALUES('" + airlineName + "', '" + flight.getDepartCity() + "', '" + flight.getArrivalCity() + "', '" + time +
+                        "', '" + formattedCost + "', '" + flight.getNumStops() + "', '"
+                        + flight + "', '" + ID + "', 'visitOrder=" + flight.getVisitOrder() + "', '" + flight.getDepartTime() + "')";
 
 
                 statement.executeUpdate(query);
@@ -188,6 +185,17 @@ public class GenerateFlightsDB {
                 System.out.println("Error: " + e);
             }
         }
+    }
+
+    private String genID(String airlineName) {
+
+        Random rnd = new Random();
+        String characters = "BCEFGHIJKLMNOPQRSTVWXYZ";
+        char randomChar = characters.charAt(rnd.nextInt(characters.length()));
+        char otherRandomChar = characters.charAt(rnd.nextInt(characters.length()));
+        int idNum = rnd.nextInt(5000);
+
+        return airlineName.substring(0, 2).toUpperCase() + idNum + randomChar + otherRandomChar;
 
     }
 
