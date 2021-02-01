@@ -169,15 +169,12 @@ public class GenerateFlightsDB {
                 double time = flight.flightCost(dGraph, "time");
                 double cost = flight.flightCost(dGraph, "cost");
 
-                NumberFormat formatter = NumberFormat.getCurrencyInstance(Locale.US);
-                String formattedCost = formatter.format(cost);
-
                 Connection conn = DriverManager.getConnection(CONNECTION_STRING);
                 Statement statement = conn.createStatement();
                 String query = "INSERT INTO flights (airline, dCity, aCity, duration, cost, numStops, obj, ID, visitOrder, dTime) " +
                         "VALUES('" + airlineName + "', '" + flight.getDepartCity() + "', '" + flight.getArrivalCity() + "', '" + time +
-                        "', '" + formattedCost + "', '" + flight.getNumStops() + "', '"
-                        + flight + "', '" + ID + "', 'visitOrder=" + flight.getVisitOrder() + "', '" + flight.getDepartTime() + "')";
+                        "', '" + cost + "', '" + flight.getNumStops() + "', '"
+                        + flight + "', '" + ID + "', '" + flight.getVisitOrder() + "', '" + flight.getDepartTime() + "')";
 
 
                 statement.executeUpdate(query);
