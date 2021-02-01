@@ -102,7 +102,21 @@ public class Flight {
 
     //empty constructor which allows us to use copyOtherIntoSelf to make a copy
     public Flight() {
+    }
 
+    public void setAirlineName(String airlineName) {
+        this.airlineName = airlineName;
+    }
+
+    public void setVisitOrder(String visitOrder) {
+        String splitVisitOrder = visitOrder.replaceAll("[\\D]", "");
+        String[] numsAsStr = splitVisitOrder.split("");
+        List<Integer> newVisitOrder = new ArrayList<>();
+
+        for (String s : numsAsStr) {
+            newVisitOrder.add(Integer.parseInt(s));
+        }
+        this.visitOrder = newVisitOrder;
     }
 
     public void setDepartCity(int departCity) {
@@ -119,7 +133,7 @@ public class Flight {
 
     public void setDepartTime() {
         final Random random = new Random();
-        final int millisInDay = 24*60*60*1000;
+        final int millisInDay = 24 * 60 * 60 * 1000;
         //DateTimeFormatter timeFormatter = DateTimeFormatter.ofLocalizedTime(FormatStyle.SHORT);
         Time time = new Time(random.nextInt(millisInDay));
         //departTime = timeFormatter.format();
@@ -166,7 +180,7 @@ public class Flight {
     // Copy another flight into this object for storage (deep copy).
     public void copyOtherIntoSelf(Flight flightSoFar) {
         // Making a copy of the set and list in this data structure.
-        citiesLeft = new TreeSet<>(flightSoFar.citiesLeft);
+//        citiesLeft = new TreeSet<>(flightSoFar.citiesLeft);
         visitOrder = new ArrayList<>(flightSoFar.visitOrder);
         departCity = flightSoFar.departCity;
         arrivalCity = flightSoFar.arrivalCity;
@@ -234,6 +248,11 @@ public class Flight {
         return cost;
     }
 
+    public String getFormattedCost() {
+        NumberFormat formatter = NumberFormat.getCurrencyInstance(Locale.US);
+        return formatter.format(cost);
+    }
+
     // Returns Double.MAXVALUE if can't find connections.
     // FIXME: this whole method is not clear and needs rewritten
     public double flightCost(DGraph graph, String choice) {
@@ -260,13 +279,16 @@ public class Flight {
         if (choice.equals("time")) {
             this.duration = cost;
         } else {
-            this.cost = cost;
+            double roundOff = (double) Math.round(cost * 100) / 100;
+            this.cost = roundOff;
+            cost = roundOff;
+
         }
         return cost;
     }
 
-    public String getVisitOrder() {
-        return visitOrder.toString();
+    public List<Integer> getVisitOrder() {
+        return visitOrder;
     }
 
     public int getNumStops() {
@@ -291,10 +313,15 @@ public class Flight {
         return city;
     }
 
+    public void setNumStops(int numStops) {
+        this.numStops = numStops;
+    }
+
     // Print out the Flight and its total cost, time, and number of stops.
     public String toString() {
-        double time = flightCost(dGraph, "time");
-        double cost = flightCost(dGraph, "cost");
+
+//        double time = flightCost(dGraph, "time");
+//        double cost = flightCost(dGraph, "cost");
         NumberFormat dollarFormatter = NumberFormat.getCurrencyInstance(Locale.US);
         String formattedCost = dollarFormatter.format(cost);
         //TODO: add str for more detailed flight info
@@ -305,9 +332,9 @@ public class Flight {
         if (numStops == 0) {
             stops = "Nonstop.";
         }
-        return dGraph.getAirlineName() + ": This flight from " + getCityName(departCity) +
-                " to " + getCityName(arrivalCity) + " departs at: " + departTime + " and takes " + String.format("%.1f", time) +
-                " hour(s). It costs " + formattedCost + ". " + stops + ".";
+        return airlineName + ": This flight from " + getCityName(departCity) +
+                " to " + getCityName(arrivalCity) + " departs at: " + departTime + " and takes " + String.format("%.1f", duration) +
+                " hour(s). It costs " + formattedCost + ". " + stops;
     }
 
 }

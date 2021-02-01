@@ -261,7 +261,16 @@ public class Main {
             isNonstop = true;
         }
         //FIXME: Now that we have a DB of flights, we can pull flights with correct info
-        getFlights(departCity, arrivalCity, isNonstop);
+        List<Flight> relevantFlights = getFlights(departCity, arrivalCity, isNonstop);
+        for (int i = 0; i < relevantFlights.size(); i++) {
+            System.out.println(i+1 + ".) " + relevantFlights.get(i).toString());
+        }
+        System.out.println("Please type the NUMBER for the flight you want: ");
+        int choice = scanner.nextInt();
+        Flight selectedFlight = relevantFlights.get(choice -1);
+        System.out.println("You chose this flight:\n");
+        System.out.println(selectedFlight.toString());
+        System.out.println("---------------------");
         //we need to provide a list of all available flights
         //findAvailableFlights(departCity, arrivalCity, isNonstop, dGraphList);
 
@@ -270,10 +279,6 @@ public class Main {
     private static List<Flight> getFlights(int departCity, int arrivalCity, boolean nonstop) {
 
         List<Flight> relevantFlights = new ArrayList<>();
-        Flight flight = new Flight();
-        flight.setDepartCity(departCity);
-        flight.setArrivalCity(arrivalCity);
-        flight.setNonStop(nonstop);
 
         String checkPassQuery;
         try {
@@ -288,17 +293,32 @@ public class Main {
 
             ResultSet results = statement.executeQuery(checkPassQuery);
             while (results.next()) {
+                Flight flight = new Flight();
+                flight.setDepartCity(departCity);
+                flight.setArrivalCity(arrivalCity);
+
+
                 double duration = results.getDouble("duration");
                 String cost = results.getString("cost");
                 String ID = results.getString("ID");
                 String airline = results.getString("airline");
                 //FIXME find out how to remove as List
-                //String visitOrder = results.getString("visitOrder");
+                String visitOrder = results.getString("visitOrder");
                 String departTime = results.getString("dTime");
-
+                int numStops = results.getInt("numStops");
+                nonstop = numStops == 0;
+                flight.setNumStops(numStops);
+                flight.setNonStop(nonstop);
+                flight.setVisitOrder(visitOrder);
+                flight.setAirlineName(airline);
+                flight.setCost(Double.parseDouble(cost));
                 flight.setDepartTime(departTime);
                 flight.setID(ID);
+                flight.setDuration(duration);
 
+                Flight storedFlight = new Flight();
+                storedFlight.copyOtherIntoSelf(flight);
+                relevantFlights.add(storedFlight);
 
             }
         } catch (SQLException e) {
