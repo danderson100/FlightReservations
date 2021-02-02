@@ -121,7 +121,7 @@ public class Main {
         do {
             System.out.println("Welcome to Reservations!\nWhat would you like to book " +
                     "(type the number for your choice)?");
-            System.out.println(" 1. Hotel\n 2. Flight\n 3. Both\n 4. Quit App");
+            System.out.println(" 1. Hotel\n 2. Flight\n 3. Both\n 4. Log out\n 5. Quit app");
             int selection = 0;
             try {
                 selection = scanner.nextInt();
@@ -131,13 +131,17 @@ public class Main {
             }
 
             switch (selection) {
-                case 1 -> bookHotel(scanner);
-                case 2 -> bookAirline(scanner);
+                case 1 -> bookHotel(scanner, currUser);
+                case 2 -> bookAirline(scanner, currUser);
                 case 3 -> {
-                    bookHotel(scanner);
-                    bookAirline(scanner);
+                    bookHotel(scanner, currUser);
+                    bookAirline(scanner, currUser);
                 }
                 case 4 ->  {
+                    System.out.println("Logging out...");
+                    welcomeMsg(scanner, null);
+                }
+                case 5 ->  {
                     System.out.println("Goodbye!");
                     quitApp = true;
                 }
@@ -232,7 +236,7 @@ public class Main {
      * Purpose: add here
      * @param scanner
      */
-    private static void bookAirline(Scanner scanner) {
+    private static void bookAirline(Scanner scanner, User user) {
         int departCity = -1;
         int arrivalCity = -1;
 
@@ -271,9 +275,16 @@ public class Main {
         System.out.println("You chose this flight:\n");
         System.out.println(selectedFlight.toString());
         System.out.println("---------------------");
+        System.out.println("");
+        confirmBooking(selectedFlight, scanner, departureDate, returnDate, user);
         //we need to provide a list of all available flights
         //findAvailableFlights(departCity, arrivalCity, isNonstop, dGraphList);
 
+    }
+
+    private static void confirmBooking(Flight selectedFlight, Scanner scanner, String departureDate,
+                                       String returnDate, User user) {
+            AirlineRes airlineRes = new AirlineRes(user, selectedFlight.getAirlineName(), selectedFlight);
     }
 
     private static List<Flight> getFlights(int departCity, int arrivalCity, boolean nonstop) {
@@ -293,28 +304,10 @@ public class Main {
 
             ResultSet results = statement.executeQuery(checkPassQuery);
             while (results.next()) {
-                Flight flight = new Flight();
+                //calls method to create flight with all the proper info
+                Flight flight = generateFlight(results);
                 flight.setDepartCity(departCity);
                 flight.setArrivalCity(arrivalCity);
-
-
-                double duration = results.getDouble("duration");
-                String cost = results.getString("cost");
-                String ID = results.getString("ID");
-                String airline = results.getString("airline");
-                //FIXME find out how to remove as List
-                String visitOrder = results.getString("visitOrder");
-                String departTime = results.getString("dTime");
-                int numStops = results.getInt("numStops");
-                nonstop = numStops == 0;
-                flight.setNumStops(numStops);
-                flight.setNonStop(nonstop);
-                flight.setVisitOrder(visitOrder);
-                flight.setAirlineName(airline);
-                flight.setCost(Double.parseDouble(cost));
-                flight.setDepartTime(departTime);
-                flight.setID(ID);
-                flight.setDuration(duration);
 
                 Flight storedFlight = new Flight();
                 storedFlight.copyOtherIntoSelf(flight);
@@ -327,6 +320,36 @@ public class Main {
 
         return relevantFlights;
     }
+
+    private static Flight generateFlight(ResultSet results) {
+        Flight flight = new Flight();
+
+        try {
+            double duration = results.getDouble("duration");
+            String cost = results.getString("cost");
+            String ID = results.getString("ID");
+            String airline = results.getString("airline");
+            //FIXME find out how to remove as List
+            String visitOrder = results.getString("visitOrder");
+            String departTime = results.getString("dTime");
+            int numStops = results.getInt("numStops");
+            boolean nonstop = numStops == 0;
+            flight.setNumStops(numStops);
+            flight.setNonStop(nonstop);
+            flight.setVisitOrder(visitOrder);
+            flight.setAirlineName(airline);
+            flight.setCost(Double.parseDouble(cost));
+            flight.setDepartTime(departTime);
+            flight.setID(ID);
+            flight.setDuration(duration);
+        } catch (SQLException e) {
+            System.out.println("error: " + e);
+        }
+
+        return flight;
+
+    }
+
     //short helper method to print the city names
     private static void printCities() {
         System.out.println("\t 1. Seattle, WA");
@@ -382,7 +405,7 @@ public class Main {
      * Purpose:
      * @param scanner
      */
-    private static void bookHotel(Scanner scanner) {
+    private static void bookHotel(Scanner scanner, User user) {
         System.out.println("Booking hotel....");
     }
 
