@@ -81,11 +81,12 @@ public class Main {
      * Purpose: This is the first user interface where a user either logs in with an existing
      * account or creates a new account. Right now it uses simple storage but when finished
      * it will use database and password hashing to store user info.
+     *
      * @param scanner, the IO scanner object.
      */
     private static void welcomeMsg(Scanner scanner, User currUser) {
         System.out.println("Welcome! Please select an option: ");
-        System.out.println("\t1. Login\n \t2. Create Account");
+        System.out.println("\t1. Login\n \t2. Create Account\n \t3. Quit App");
 
         int loginSelection;
         try {
@@ -95,6 +96,10 @@ public class Main {
                 case 2 -> {
                     createAccount(scanner);
                     currUser = login(scanner);
+                }
+                case 3 -> {
+                    System.out.println("Goodbye!");
+                    System.exit(1);
                 }
                 default -> {
                     System.out.println("Error! Please try again");
@@ -114,6 +119,7 @@ public class Main {
 
     /**
      * Purpose: ADDME
+     *
      * @param scanner
      * @param currUser
      */
@@ -137,11 +143,11 @@ public class Main {
                     bookHotel(scanner, currUser);
                     bookAirline(scanner, currUser);
                 }
-                case 4 ->  {
+                case 4 -> {
                     System.out.println("Logging out...");
                     welcomeMsg(scanner, null);
                 }
-                case 5 ->  {
+                case 5 -> {
                     System.out.println("Goodbye!");
                     quitApp = true;
                 }
@@ -155,6 +161,7 @@ public class Main {
 
     /**
      * Purpose: ADD HERE
+     *
      * @param scanner
      */
     private static void createAccount(Scanner scanner) {
@@ -182,6 +189,7 @@ public class Main {
 
     /**
      * Purpose ADD HERe
+     *
      * @param scanner
      * @return
      */
@@ -223,7 +231,10 @@ public class Main {
         System.out.println("\t3. Exit");
         int choice = scanner.nextInt();
         switch (choice) {
-            case 1 -> login(scanner);
+            case 1 -> {
+                login(scanner);
+            }
+
             case 2 -> createAccount(scanner);
             case 3 -> {
                 System.out.println("Goodbye!");
@@ -234,9 +245,11 @@ public class Main {
 
     /**
      * Purpose: add here
+     *
      * @param scanner
      */
     private static void bookAirline(Scanner scanner, User user) {
+        //set to invalid value to easily check when we get valid input
         int departCity = -1;
         int arrivalCity = -1;
 
@@ -267,12 +280,12 @@ public class Main {
         //FIXME: Now that we have a DB of flights, we can pull flights with correct info
         List<Flight> relevantFlights = getFlights(departCity, arrivalCity, isNonstop);
         for (int i = 0; i < relevantFlights.size(); i++) {
-            System.out.println(i+1 + ".) " + relevantFlights.get(i).toString());
+            System.out.println(i + 1 + ".) " + relevantFlights.get(i).toString());
         }
         System.out.println("Please type the NUMBER for the flight you want: ");
         int choice = scanner.nextInt();
-        Flight selectedFlight = relevantFlights.get(choice -1);
-        System.out.println("You chose this flight:\n");
+        Flight selectedFlight = relevantFlights.get(choice - 1);
+        System.out.println("You chose this flight:");
         System.out.println(selectedFlight.toString());
         System.out.println("---------------------");
         System.out.println("");
@@ -284,28 +297,32 @@ public class Main {
 
     private static void confirmBooking(Flight selectedFlight, Scanner scanner, String departureDate,
                                        String returnDate, User user) {
-            AirlineRes airlineRes = new AirlineRes(user, selectedFlight.getAirlineName(), selectedFlight);
+        System.out.println("Confirming booking...");
+        AirlineRes airlineRes = new AirlineRes(user, selectedFlight.getAirlineName(), selectedFlight);
+        airlineRes.setDepartureDate(departureDate);
+        airlineRes.setArrivalDate(returnDate);
+        System.out.println(airlineRes.toString());
     }
 
     private static List<Flight> getFlights(int departCity, int arrivalCity, boolean nonstop) {
 
         List<Flight> relevantFlights = new ArrayList<>();
-
-        String checkPassQuery;
+        String flightsQuery;
         try {
             Connection conn = DriverManager.getConnection(CONNECTION_STRING);
             Statement statement = conn.createStatement();
             if (!nonstop) {
-                checkPassQuery = "SELECT * FROM flights WHERE dCity='" + departCity + "' AND aCity='" + arrivalCity +"'";
+                flightsQuery = "SELECT * FROM flights WHERE dCity='" + departCity + "' AND aCity='" + arrivalCity + "'";
             } else {
-                checkPassQuery = "SELECT * FROM flights WHERE dCity='" + departCity + "' AND aCity='" + arrivalCity +
+                flightsQuery = "SELECT * FROM flights WHERE dCity='" + departCity + "' AND aCity='" + arrivalCity +
                         "' AND numStops='0'";
             }
 
-            ResultSet results = statement.executeQuery(checkPassQuery);
+            ResultSet results = statement.executeQuery(flightsQuery);
             while (results.next()) {
                 //calls method to create flight with all the proper info
                 Flight flight = generateFlight(results);
+
                 flight.setDepartCity(departCity);
                 flight.setArrivalCity(arrivalCity);
 
@@ -361,6 +378,7 @@ public class Main {
 
     /**
      * Purpose:
+     *
      * @param flights
      * @param airlineFlights
      * @param nonstop
@@ -384,6 +402,7 @@ public class Main {
 
     /**
      * Purpose:
+     *
      * @param flights
      * @param airlineFlights
      * @param nonstop
@@ -403,6 +422,7 @@ public class Main {
 
     /**
      * Purpose:
+     *
      * @param scanner
      */
     private static void bookHotel(Scanner scanner, User user) {
