@@ -12,12 +12,19 @@ public class AirlineRes extends Reservation{
 
     private User user;
     private String airline;
-    private Flight flight;
+    private Flight departFlight;
+    private Flight returnFlight;
+    private double totalCost;
 
-    public AirlineRes(User user, String airline, Flight flight) {
+    public AirlineRes(User user, String airline, Flight flight, boolean oneWay) {
+        super();
         this.user = user;
         this.airline = airline;
-        this.flight = flight;
+        this.departFlight = flight;
+        if (oneWay) {
+            returnFlight = null;
+        }
+
     }
 
     public User getUser() {
@@ -36,12 +43,12 @@ public class AirlineRes extends Reservation{
         this.airline = airline;
     }
 
-    public Flight getFlight() {
-        return flight;
+    public Flight getDepartFlight() {
+        return departFlight;
     }
 
-    public void setFlight(Flight flight) {
-        this.flight = flight;
+    public void setDepartFlight(Flight departFlight) {
+        this.departFlight = departFlight;
     }
 
     @Override
@@ -50,12 +57,12 @@ public class AirlineRes extends Reservation{
         if (o == null || getClass() != o.getClass()) return false;
         if (!super.equals(o)) return false;
         AirlineRes that = (AirlineRes) o;
-        return Objects.equals(user, that.user) && Objects.equals(airline, that.airline) && Objects.equals(flight, that.flight);
+        return Objects.equals(user, that.user) && Objects.equals(airline, that.airline) && Objects.equals(departFlight, that.departFlight);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(super.hashCode(), user, airline, flight);
+        return Objects.hash(super.hashCode(), user, airline, departFlight);
     }
 
     @Override
@@ -63,7 +70,7 @@ public class AirlineRes extends Reservation{
         return "AirlineRes{" +
                 "user=" + user +
                 ", airline='" + airline + '\'' +
-                ", flight=" + flight +
+                ", flight=" + departFlight +
                 '}';
     }
 }

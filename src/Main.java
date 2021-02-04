@@ -91,6 +91,7 @@ public class Main {
         int loginSelection;
         try {
             loginSelection = scanner.nextInt();
+            scanner.nextLine();
             switch (loginSelection) {
                 case 1 -> currUser = login(scanner);
                 case 2 -> {
@@ -194,31 +195,25 @@ public class Main {
      * @return
      */
     private static User login(Scanner scanner) {
-        boolean login = false;
         User attempt;
 
-        do {
-            System.out.println("Log in: ");
-            System.out.println("Please enter your username: ");
-            String username = scanner.next();
-            System.out.println("Please enter your password: ");
-            String pass = scanner.next();
+        System.out.println("Log in: ");
+        System.out.println("Please enter your username: ");
+        String username = scanner.nextLine();
+        System.out.println("Please enter your password: ");
+        String pass = scanner.nextLine();
+        attempt = new User(username, pass);
 
-            attempt = new User(username, pass);
+        boolean check = attempt.validateLogin(username, pass);
 
-            boolean check = attempt.validateLogin(username, pass);
-
-            if (!check) {
-                loginFailed(scanner);
-            } else {
-                List<String> otherCreds = attempt.getCredentials(username);
-                attempt.setEmail(otherCreds.get(0));
-                attempt.setPhone(otherCreds.get(1));
-                System.out.println("Logged in as " + username);
-                login = true;
-            }
-
-        } while (!login);
+        if (!check) {
+            loginFailed(scanner);
+        } else {
+            List<String> otherCreds = attempt.getCredentials(username);
+            attempt.setEmail(otherCreds.get(0));
+            attempt.setPhone(otherCreds.get(1));
+            System.out.println("Logged in as " + username);
+        }
 
         return attempt;
     }
@@ -229,18 +224,24 @@ public class Main {
         System.out.println("\t1. Try again");
         System.out.println("\t2. Create Account");
         System.out.println("\t3. Exit");
-        int choice = scanner.nextInt();
-        switch (choice) {
-            case 1 -> {
-                login(scanner);
-            }
 
-            case 2 -> createAccount(scanner);
-            case 3 -> {
-                System.out.println("Goodbye!");
-                System.exit(1);
+        try {
+            int choice = scanner.nextInt();
+            scanner.nextLine();
+            switch (choice) {
+                case 1 -> login(scanner);
+                case 2 -> createAccount(scanner);
+                case 3 -> {
+                    System.out.println("Goodbye!");
+                    System.exit(1);
+                }
             }
+        } catch (InputMismatchException e) {
+            System.out.println("You must enter a number: ");
+            scanner.nextLine();
+            loginFailed(scanner);
         }
+
     }
 
     /**
@@ -277,31 +278,47 @@ public class Main {
         if (nonstop.equals("YES")) {
             isNonstop = true;
         }
-        //FIXME: Now that we have a DB of flights, we can pull flights with correct info
+        Flight[] selectedFlights = new Flight[2];
+        selectedFlights[0] = selectFlights(departCity, arrivalCity, isNonstop, scanner, true);
+        selectedFlights[1] = selectFlights(arrivalCity, departCity, isNonstop, scanner, false);
+
+        confirmBooking(selectedFlights, scanner, departureDate, returnDate, user);
+
+    }
+
+    private static Flight selectFlights(int departCity, int arrivalCity, boolean isNonstop, Scanner scanner,
+                                        boolean departing) {
+        String departOrReturn = "";
+        if (departing) {
+            departOrReturn = "DEPARTURE";
+        } else {
+            departOrReturn = "RETURN";
+        }
         List<Flight> relevantFlights = getFlights(departCity, arrivalCity, isNonstop);
         for (int i = 0; i < relevantFlights.size(); i++) {
             System.out.println(i + 1 + ".) " + relevantFlights.get(i).toString());
         }
-        System.out.println("Please type the NUMBER for the flight you want: ");
+        System.out.println("Please type the NUMBER for the " + departOrReturn + " flight you want: ");
         int choice = scanner.nextInt();
         Flight selectedFlight = relevantFlights.get(choice - 1);
-        System.out.println("You chose this flight:");
+        System.out.println("You chose this " + departOrReturn + " flight:");
         System.out.println(selectedFlight.toString());
         System.out.println("---------------------");
-        System.out.println("");
-        confirmBooking(selectedFlight, scanner, departureDate, returnDate, user);
-        //we need to provide a list of all available flights
-        //findAvailableFlights(departCity, arrivalCity, isNonstop, dGraphList);
 
+        return selectedFlight;
     }
 
-    private static void confirmBooking(Flight selectedFlight, Scanner scanner, String departureDate,
+    private static void confirmBooking(Flight[] selectedFlights, Scanner scanner, String departureDate,
                                        String returnDate, User user) {
         System.out.println("Confirming booking...");
-        AirlineRes airlineRes = new AirlineRes(user, selectedFlight.getAirlineName(), selectedFlight);
-        airlineRes.setDepartureDate(departureDate);
-        airlineRes.setArrivalDate(returnDate);
-        System.out.println(airlineRes.toString());
+        for (Flight flight : selectedFlights) {
+            //FIXME: get one-way info from user
+            AirlineRes airlineRes = new AirlineRes(user, flight.getAirlineName(), flight, false);
+            airlineRes.setDepartureDate(departureDate);
+            airlineRes.setArrivalDate(returnDate);
+            System.out.println(airlineRes.toString());
+        }
+
     }
 
     private static List<Flight> getFlights(int departCity, int arrivalCity, boolean nonstop) {
@@ -346,7 +363,6 @@ public class Main {
             String cost = results.getString("cost");
             String ID = results.getString("ID");
             String airline = results.getString("airline");
-            //FIXME find out how to remove as List
             String visitOrder = results.getString("visitOrder");
             String departTime = results.getString("dTime");
             int numStops = results.getInt("numStops");
