@@ -263,24 +263,35 @@ public class Main {
         }
         System.out.println("Where are you going (arrival CITY)? ");
         printCities();
+        boolean isNonstop = false;
+        boolean oneWay = false;
+        String departureDate = "";
+        String returnDate = "";
         try {
             arrivalCity = scanner.nextInt();
+            System.out.println("Is this a one-way trip? (Type YES or NO)");
+            String oneWayStr = scanner.next().toUpperCase(Locale.ROOT);
+            if (oneWayStr.equals("YES")) {
+                oneWay = true;
+            }
+            System.out.println("Please enter departure date in THIS FORMAT (MM/DD/YYYY): ");
+            departureDate = scanner.next();
+            System.out.println("Please enter return date in THIS FORMAT (MM/DD/YYYY): ");
+            returnDate = scanner.next();
+            System.out.println("Nonstop only? (Type YES or NO)");
+            String nonstop = scanner.next().toUpperCase();
+            if (nonstop.equals("YES")) {
+                isNonstop = true;
+            }
         } catch (InputMismatchException e) {
             System.out.println("Error: " + e);
         }
-        boolean isNonstop = false;
-        System.out.println("Please enter departure date in THIS FORMAT (MM/DD/YYYY): ");
-        String departureDate = scanner.next();
-        System.out.println("Please enter return date in THIS FORMAT (MM/DD/YYYY): ");
-        String returnDate = scanner.next();
-        System.out.println("Nonstop only? Type YES or NO");
-        String nonstop = scanner.next().toUpperCase();
-        if (nonstop.equals("YES")) {
-            isNonstop = true;
-        }
+
         Flight[] selectedFlights = new Flight[2];
         selectedFlights[0] = selectFlights(departCity, arrivalCity, isNonstop, scanner, true);
-        selectedFlights[1] = selectFlights(arrivalCity, departCity, isNonstop, scanner, false);
+        if (!oneWay) {
+            selectedFlights[1] = selectFlights(arrivalCity, departCity, isNonstop, scanner, false);
+        }
 
         confirmBooking(selectedFlights, scanner, departureDate, returnDate, user);
 
@@ -310,12 +321,16 @@ public class Main {
 
     private static void confirmBooking(Flight[] selectedFlights, Scanner scanner, String departureDate,
                                        String returnDate, User user) {
+        boolean oneWay = false;
+        if (selectedFlights[1] == null) {
+            oneWay = true;
+        }
         System.out.println("Confirming booking...");
         for (Flight flight : selectedFlights) {
-            //FIXME: get one-way info from user
-            AirlineRes airlineRes = new AirlineRes(user, flight.getAirlineName(), flight, false);
+            AirlineRes airlineRes = new AirlineRes(user, flight.getAirlineName(), flight, oneWay);
             airlineRes.setDepartureDate(departureDate);
             airlineRes.setArrivalDate(returnDate);
+            user.setReservation(airlineRes);
             System.out.println(airlineRes.toString());
         }
 

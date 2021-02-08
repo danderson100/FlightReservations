@@ -24,13 +24,20 @@ public class User {
     private String phone;
     private final String password;
 
+    private Reservation reservation;
+
     public User(String name, String password) {
         this.name = name;
         this.password = password;
     }
 
-    public String getName() {
-        return name;
+
+    public void setReservation(Reservation reservation) {
+        this.reservation = reservation;
+    }
+
+    public Reservation getReservation() {
+        return this.reservation;
     }
 
     public void setEmail(String email) {
@@ -39,14 +46,6 @@ public class User {
 
     public void setPhone(String phone) {
         this.phone = phone;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public String getPhone() {
-        return phone;
     }
 
     public boolean generateLogin() {
@@ -78,7 +77,7 @@ public class User {
             checkPass = checkPassword(pass, hashedPass);
 
         } catch (SQLException e) {
-            System.out.println("Error: " + e);
+            System.out.println("Login failed.");
 
         }
         return checkPass;
@@ -118,21 +117,9 @@ public class User {
         return "User{" +
                 "name='" + name + '\'' +
                 ", email='" + email + '\'' +
-                ", phone=" + phone +
+                ", phone='" + phone + '\'' +
+                ", password='" + password + '\'' +
+                ", reservation=" + reservation +
                 '}';
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        User user = (User) o;
-        return phone.equals(user.phone) && Objects.equals(name, user.name) && Objects.equals(email, user.email)
-                && Objects.equals(password, user.password);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(name, password);
     }
 }

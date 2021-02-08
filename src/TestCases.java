@@ -16,61 +16,61 @@ public class TestCases {
         assertEquals(5, x);
     }
 
-    @Test
-    public void testDGraphReadIn() {
-        DGraph dGraph = null;
-        try {
-            dGraph = read("./PublicTestCases/flights/united.mtx");
-        } catch (IOException e) {
-            System.out.println("Error: " + e);
-        }
-        assert dGraph != null;
-        int x = dGraph.getNumNodes();
-        System.out.println("Expected 5, got " + x);
-        assertEquals(5, x);
-    }
-
-    @Test
-    public void testDGraphAirlineName() {
-        DGraph dGraph = null;
-        try {
-            dGraph = read("./PublicTestCases/flights/united.mtx");
-        } catch (IOException e) {
-            System.out.println("Error: " + e);
-        }
-        assert dGraph != null;
-        String airlineName = dGraph.getAirlineName();
-        System.out.println("Expected United, got " + airlineName);
-        assertEquals("United", airlineName);
-    }
-
-    @Test
-    public void testDGraphEdgeTime() {
-        DGraph dGraph = null;
-        try {
-            dGraph = read("./PublicTestCases/flights/united.mtx");
-        } catch (IOException e) {
-            System.out.println("Error: " + e);
-        }
-        assert dGraph != null;
-        double time = dGraph.getWeight(1, 2, "time");
-        System.out.println("Expected 1.7, got " + time);
-        assertEquals(1.7, time, 0);
-    }
-
-    @Test
-    public void testDGraphEdgeCost() {
-        DGraph dGraph = null;
-        try {
-            dGraph = read("./PublicTestCases/flights/united.mtx");
-        } catch (IOException e) {
-            System.out.println("Error: " + e);
-        }
-        assert dGraph != null;
-        double cost = dGraph.getWeight(1, 2, "cost");
-        System.out.println("Expected 220.5, got " + cost);
-        assertEquals(220.5, cost, 0);
-    }
+//    @Test
+//    public void testDGraphReadIn() {
+//        DGraph dGraph = null;
+//        try {
+//            dGraph = read("./PublicTestCases/flights/united.mtx");
+//        } catch (IOException e) {
+//            System.out.println("Error: " + e);
+//        }
+//        assert dGraph != null;
+//        int x = dGraph.getNumNodes();
+//        System.out.println("Expected 5, got " + x);
+//        assertEquals(5, x);
+//    }
+//
+//    @Test
+//    public void testDGraphAirlineName() {
+//        DGraph dGraph = null;
+//        try {
+//            dGraph = read("./PublicTestCases/flights/united.mtx");
+//        } catch (IOException e) {
+//            System.out.println("Error: " + e);
+//        }
+//        assert dGraph != null;
+//        String airlineName = dGraph.getAirlineName();
+//        System.out.println("Expected United, got " + airlineName);
+//        assertEquals("United", airlineName);
+//    }
+//
+//    @Test
+//    public void testDGraphEdgeTime() {
+//        DGraph dGraph = null;
+//        try {
+//            dGraph = read("./PublicTestCases/flights/united.mtx");
+//        } catch (IOException e) {
+//            System.out.println("Error: " + e);
+//        }
+//        assert dGraph != null;
+//        double time = dGraph.getWeight(1, 2, "time");
+//        System.out.println("Expected 1.7, got " + time);
+//        assertEquals(1.7, time, 0);
+//    }
+//
+//    @Test
+//    public void testDGraphEdgeCost() {
+//        DGraph dGraph = null;
+//        try {
+//            dGraph = read("./PublicTestCases/flights/united.mtx");
+//        } catch (IOException e) {
+//            System.out.println("Error: " + e);
+//        }
+//        assert dGraph != null;
+//        double cost = dGraph.getWeight(1, 2, "cost");
+//        System.out.println("Expected 220.5, got " + cost);
+//        assertEquals(220.5, cost, 0);
+//    }
 
     @Test
     public void testBCryptCheckPass() {
@@ -79,6 +79,15 @@ public class TestCases {
 
         boolean check = BCrypt.checkpw(pass, hashedPass);
         assertTrue(check);
+    }
+
+    @Test
+    public void testAirlineRes() {
+        AirlineRes airlineRes = new AirlineRes(null, "Delta", new Flight(), false);
+        String airlineName = airlineRes.getAirline();
+        System.out.println("Should be Delta, got " + airlineName);
+        assertEquals("Delta", airlineName);
+
     }
 
 
