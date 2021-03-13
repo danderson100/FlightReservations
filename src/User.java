@@ -7,9 +7,9 @@ import java.util.Objects;
  * Author: David Anderson
  * File: User.java
  *
- * Purpose: This class will store a User's information and add it to a database. It will use an encryption
- * class to hash the password for safe storage. Once a user is added to the database, they will be
- * able to log in every time they start the program.
+ * Purpose: This class will store a User's information and add it to a database.
+ * It will use an encryption class to hash the password for safe storage. Once a user
+ * is added to the database, they will be able to log in every time they start the program.
  */
 
 public class User {
